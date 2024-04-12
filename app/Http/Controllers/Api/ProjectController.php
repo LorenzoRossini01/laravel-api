@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Project;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -14,7 +15,17 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        //
+        $projects=Project::orderBy('created_at', 'desc')
+        ->select(['id','user_id','category_id','title','description','link','imageUrl'])
+        ->with(['category:id,label,color', 'tags:id,label,color'])
+        ->paginate();
+
+        foreach($projects as $project){
+            $project->imageUrl=!empty($project->imageUrl)
+            ?asset('storage/'. $project->imageUrl)
+            :null;
+        }
+        return response()->json($projects);
     }
 
     /**
