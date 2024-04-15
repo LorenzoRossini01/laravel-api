@@ -17,7 +17,7 @@ class ProjectController extends Controller
     {
         $projects=Project::orderBy('created_at', 'desc')
         ->select(['id','user_id','category_id','title','description','link','imageUrl','slug'])
-        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name'])
+        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name,image'])
         ->paginate();
 
         foreach($projects as $project){
@@ -53,12 +53,15 @@ class ProjectController extends Controller
         $project=Project::orderBy('created_at', 'desc')
         ->select(['id','user_id','category_id','title','description','link','imageUrl'])
         ->where('slug',$slug)
-        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name'])
+        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name,image'])
         ->first();
+
+        if(!str_starts_with($project->imageUrl,'https')){
 
             $project->imageUrl=!empty($project->imageUrl)
             ?asset('storage/'. $project->imageUrl)
             :null;
+        } 
         return response()->json($project);
     }
 
