@@ -16,14 +16,17 @@ class ProjectController extends Controller
     public function index()
     {
         $projects=Project::orderBy('created_at', 'desc')
-        ->select(['id','user_id','category_id','title','description','link','imageUrl'])
-        ->with(['category:id,label,color', 'tags:id,label,color'])
+        ->select(['id','user_id','category_id','title','description','link','imageUrl','slug'])
+        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name'])
         ->paginate();
 
         foreach($projects as $project){
-            $project->imageUrl=!empty($project->imageUrl)
-            ?asset('storage/'. $project->imageUrl)
-            :null;
+            if(!str_starts_with($project->imageUrl,'https')){
+
+                $project->imageUrl=!empty($project->imageUrl)
+                ?asset('storage/'. $project->imageUrl)
+                :null;
+            } 
         }
         return response()->json($projects);
     }
@@ -45,9 +48,18 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($slug)
     {
-        //
+        $project=Project::orderBy('created_at', 'desc')
+        ->select(['id','user_id','category_id','title','description','link','imageUrl'])
+        ->where('slug',$slug)
+        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name'])
+        ->first();
+
+            $project->imageUrl=!empty($project->imageUrl)
+            ?asset('storage/'. $project->imageUrl)
+            :null;
+        return response()->json($project);
     }
 
     /**
