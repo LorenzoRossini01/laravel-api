@@ -87,4 +87,45 @@ class ProjectController extends Controller
     {
         //
     }
+
+    public function fliter_category($filter_id)
+    {
+        $projects=Project::orderBy('created_at', 'desc')
+        ->select(['id','user_id','category_id','title','description','link','imageUrl','slug'])
+        ->where('category_id',$filter_id)
+        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name,image'])
+        ->paginate();
+
+        foreach($projects as $project){
+            if(!str_starts_with($project->imageUrl,'https')){
+
+                $project->imageUrl=!empty($project->imageUrl)
+                ?asset('storage/'. $project->imageUrl)
+                :null;
+            } 
+        }
+        return response()->json($projects);
+    }
+
+
+    public function filter_tag($filter_id)
+    {
+
+
+        $projects=Project::orderBy('created_at', 'desc')
+        ->select(['id','user_id','category_id','title','description','link','imageUrl','slug']) 
+        ->with(['category:id,label,color', 'tags:id,label,color', 'user:id,name,image'])
+        ->whereHas('tags', function($q)use($filter_id){$q->where('tag_id',$filter_id);})
+        ->paginate();
+
+        foreach($projects as $project){
+            if(!str_starts_with($project->imageUrl,'https')){
+
+                $project->imageUrl=!empty($project->imageUrl)
+                ?asset('storage/'. $project->imageUrl)
+                :null;
+            } 
+        }
+        return response()->json($projects);
+    }
 }
